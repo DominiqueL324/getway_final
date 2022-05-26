@@ -36,7 +36,7 @@ class ClientApi(APIView):
         
         final_=[]
         try:
-            clients = requests.get(URLCLIENT,headers={"Authorization":"Token "+token},params=self.request.query_params).json()
+            clients = requests.get(URLCLIENT,headers={"Authorization":"Bearer "+token},params=self.request.query_params).json()
             return Response(clients,status=200) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -55,7 +55,7 @@ class ClientApi(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
 
         try:
-            clients = requests.post(URLCLIENT,headers={"Authorization":"Token "+token},data=self.request.data).json() 
+            clients = requests.post(URLCLIENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             return Response(clients,status=200) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -79,7 +79,7 @@ class ClientDetailsAPI(APIView):
         url_ = URLCLIENT+str(id)
     
         try:
-            client = requests.get(url_,headers={"Authorization":"Token "+token}).json() 
+            client = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
             return Response(client,status=200)    
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -98,7 +98,7 @@ class ClientDetailsAPI(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
 
         try:
-            clients = requests.put(URLCLIENT+str(id),headers={"Authorization":"Token "+token},data=self.request.data).json()
+            clients = requests.put(URLCLIENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             return Response(clients,status=401) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -116,7 +116,7 @@ class ClientDetailsAPI(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
 
         try:
-            clients = requests.delete(URLCLIENT+str(id),headers={"Authorization":"Token "+token}).json()
+            clients = requests.delete(URLCLIENT+str(id),headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401)

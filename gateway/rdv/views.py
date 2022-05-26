@@ -38,8 +38,8 @@ class RdvApi(APIView):
         finaly_ ={}
         for rdv in rdvs.json()['results']:
             try:
-                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Token "+token}).json()[0]
-                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Token "+token}).json()[0]
+                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
+                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
                 #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
             except requests.JSONDecodeError:
                 return JsonResponse({"status":"failure"}) 
@@ -68,8 +68,8 @@ class RdvApi(APIView):
         rdvs = requests.get(URLRDV+str(rdvs['id']))
         for rdv in rdvs.json():
             try:
-                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Token "+token}).json()[0]
-                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Token "+token}).json()[0]
+                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
+                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
                 #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
             except requests.JSONDecodeError:
                 return JsonResponse({"status":"failure"}) 
@@ -98,8 +98,8 @@ class RdvApiDetails(APIView):
 
         try:
             for rdv in rdvs.json():
-                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Token "+token}).json()[0]
-                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Token "+token}).json()[0]
+                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
+                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
                 #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
                 final_.append(rdv)
         except requests.JSONDecodeError:
@@ -130,8 +130,8 @@ class RdvApiDetails(APIView):
         try:
             for rdv in rdvs.json():
                 
-                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Token "+token}).json()[0]
-                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Token "+token}).json()[0]
+                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
+                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
                 #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
                 final_.append(rdv)
         except requests.JSONDecodeError:
@@ -158,5 +158,5 @@ class RdvApiDetails(APIView):
             return JsonResponse({"status":"failure"},status=401)
 
 def controller(token):
-    rdvs = requests.get(URLMANAGER+token,headers={"Authorization":"Token "+token}).json()
+    rdvs = requests.get(URLMANAGER+token,headers={"Authorization":"Bearer "+token}).json()
     return rdvs

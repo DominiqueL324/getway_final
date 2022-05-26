@@ -17,6 +17,7 @@ from datetime import date, datetime,time,timedelta
 import requests
 from rdv.views import controller
 from gateway.settings import *
+from logger.views import checkRole
 # Create your views here.
 
 class AgentApi(APIView):
@@ -34,8 +35,14 @@ class AgentApi(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
         
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+            #return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+            #return JsonResponse({"status":"No roles"},status=401)
+        
         try:
-            clients = requests.get(URLAGENT,params=request.query_params,headers={"Authorization":"Token "+token}).json()
+            clients = requests.get(URLAGENT,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
             return Response(clients,status=200) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -52,9 +59,13 @@ class AgentApi(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
-
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+        #    return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+        #    return JsonResponse({"status":"No roles"},status=401)
         try:
-            agents = requests.post(URLAGENT,headers={"Authorization":"Token "+token},data=self.request.data).json() 
+            agents = requests.post(URLAGENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             return Response(agents,status=200) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -74,11 +85,16 @@ class AgentDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+            #return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+            #return JsonResponse({"status":"No roles"},status=401)
 
         url_ = URLAGENT+str(id)
     
         try:
-            agent = requests.get(url_,headers={"Authorization":"Token "+token}).json() 
+            agent = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
             return Response(agent,status=200)    
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -95,9 +111,15 @@ class AgentDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+         #   return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+            #return JsonResponse({"status":"No roles"},status=401)
 
         try:
-            agents = requests.put(URLAGENT+str(id),headers={"Authorization":"Token "+token},data=self.request.data).json()
+            agents = requests.put(URLAGENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             return Response(agents,status=401) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -113,9 +135,14 @@ class AgentDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+        #   return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+        #    return JsonResponse({"status":"No roles"},status=401)
 
         try:
-            agents = requests.delete(URLAGENT+str(id),headers={"Authorization":"Token "+token}).json()
+            agents = requests.delete(URLAGENT+str(id),headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401)

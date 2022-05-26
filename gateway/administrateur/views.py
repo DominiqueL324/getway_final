@@ -17,6 +17,7 @@ from datetime import date, datetime,time,timedelta
 import requests
 from rdv.views import controller
 from gateway.settings import *
+from logger.views import checkRole
 # Create your views here.
 
 class AdministrateurApi(APIView):
@@ -33,9 +34,15 @@ class AdministrateurApi(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
-        
+            
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+            #return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+            #return JsonResponse({"status":"No roles"},status=401)
+
         try:
-            admins = requests.get(URLADMINISTRATEUR,params=request.query_params,headers={"Authorization":"Token "+token}).json()
+            admins = requests.get(URLADMINISTRATEUR,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
             return Response(admins,status=200) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -52,9 +59,15 @@ class AdministrateurApi(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+            #return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+            #return JsonResponse({"status":"No roles"},status=401)
 
         try:
-            administrateurs = requests.post(URLADMINISTRATEUR,headers={"Authorization":"Token "+token},data=self.request.data).json() 
+            administrateurs = requests.post(URLADMINISTRATEUR,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             return Response(administrateurs,status=200) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -74,11 +87,17 @@ class AdministrateurDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+            #return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+            #return JsonResponse({"status":"No roles"},status=401)
 
         url_ = URLADMINISTRATEUR+str(id)
     
         try:
-            administrateur = requests.get(url_,headers={"Authorization":"Token "+token}).json() 
+            administrateur = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
             return Response(administrateur,status=200)    
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -95,9 +114,15 @@ class AdministrateurDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+            
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+            #return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+            #return JsonResponse({"status":"No roles"},status=401)
 
         try:
-            administrateurs = requests.put(URLADMINISTRATEUR+str(id),headers={"Authorization":"Token "+token},data=self.request.data).json()
+            administrateurs = requests.put(URLADMINISTRATEUR+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             return Response(administrateurs,status=401) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -113,9 +138,15 @@ class AdministrateurDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
+        #controle des roles 
+        #if checkRole(self.request,"administrateur") == 0:
+            #return JsonResponse({"status":"insufficient privileges"},status=401)
+        #if checkRole(self.request,"administrateur")== -1:
+            #return JsonResponse({"status":"No roles"},status=401)
 
         try:
-            administrateurs = requests.delete(URLADMINISTRATEUR+str(id),headers={"Authorization":"Token "+token}).json()
+            administrateurs = requests.delete(URLADMINISTRATEUR+str(id),headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401)

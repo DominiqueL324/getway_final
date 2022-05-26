@@ -36,7 +36,7 @@ class SalarieApi(APIView):
         
         final_=[]
         try:
-            salaries = requests.get(URLSALARIE,params=request.query_params,headers={"Authorization":"Token "+token}).json()
+            salaries = requests.get(URLSALARIE,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
             return Response(salaries,status=200) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -55,7 +55,7 @@ class SalarieApi(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
 
         try:
-            salaries = requests.post(URLSALARIE,headers={"Authorization":"Token "+token},data=self.request.data).json() 
+            salaries = requests.post(URLSALARIE,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             return Response(salaries,status=200) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -79,7 +79,7 @@ class SalarieDetailsAPI(APIView):
         url_ = URLSALARIE+str(id)
     
         try:
-            salarie = requests.get(url_,headers={"Authorization":"Token "+token}).json() 
+            salarie = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
             return Response(salarie,status=200)    
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -98,7 +98,7 @@ class SalarieDetailsAPI(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
 
         try:
-            salaries = requests.put(URLSALARIE+str(id),headers={"Authorization":"Token "+token},data=self.request.data).json()
+            salaries = requests.put(URLSALARIE+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             return Response(salaries,status=401) 
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -116,7 +116,7 @@ class SalarieDetailsAPI(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
 
         try:
-            salaries = requests.delete(URLSALARIE+str(id),headers={"Authorization":"Token "+token}).json()
+            salaries = requests.delete(URLSALARIE+str(id),headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
         except requests.JSONDecodeError:
             return JsonResponse({"status":"failure"},status=401)
