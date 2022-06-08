@@ -38,7 +38,7 @@ class SalarieApi(APIView):
         try:
             salaries = requests.get(URLSALARIE,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
             return Response(salaries,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
     def post(self,request):
@@ -57,7 +57,7 @@ class SalarieApi(APIView):
         try:
             salaries = requests.post(URLSALARIE,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             return Response(salaries,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
                
@@ -81,7 +81,7 @@ class SalarieDetailsAPI(APIView):
         try:
             salarie = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
             return Response(salarie,status=200)    
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
@@ -100,7 +100,7 @@ class SalarieDetailsAPI(APIView):
         try:
             salaries = requests.put(URLSALARIE+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             return Response(salaries,status=401) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
            
     def delete(self,request,id):
@@ -118,7 +118,7 @@ class SalarieDetailsAPI(APIView):
         try:
             salaries = requests.delete(URLSALARIE+str(id),headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401)
 
 

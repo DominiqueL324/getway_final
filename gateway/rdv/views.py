@@ -41,7 +41,7 @@ class RdvApi(APIView):
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
                 #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
-            except requests.JSONDecodeError:
+            except ValueError:
                 return JsonResponse({"status":"failure"}) 
             final_.append(rdv)
         finaly_['count'] = rdvs.json()['count']
@@ -71,7 +71,7 @@ class RdvApi(APIView):
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
                 #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
-            except requests.JSONDecodeError:
+            except ValueError:
                 return JsonResponse({"status":"failure"}) 
             final_.append(rdv)
         return Response(final_,status=status.HTTP_201_CREATED)
@@ -102,7 +102,7 @@ class RdvApiDetails(APIView):
                 rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
                 #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
                 final_.append(rdv)
-        except requests.JSONDecodeError:
+        except ValueError:
                 return JsonResponse({"status":"failure"},status=401) 
             
         return Response(final_,status=status.HTTP_200_OK)
@@ -123,7 +123,7 @@ class RdvApiDetails(APIView):
         final_=[]
         try:
             rdvs = requests.put(URLRDV+str(id),data=self.request.data).json()[0]
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
         rdvs = requests.get(URLRDV+str(rdvs['id']))
@@ -134,7 +134,7 @@ class RdvApiDetails(APIView):
                 rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
                 #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
                 final_.append(rdv)
-        except requests.JSONDecodeError:
+        except ValueError:
                 return JsonResponse({"status":"failure"},status=401) 
            
         return Response(final_,status=status.HTTP_201_CREATED)
@@ -154,7 +154,7 @@ class RdvApiDetails(APIView):
         try:
             rdvs = requests.delete(URLRDV+str(id)).json()
             return JsonResponse({"status":"done"},status=200)
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401)
 
 def controller(token):

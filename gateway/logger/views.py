@@ -27,7 +27,7 @@ class RefreshToken(APIView):
         try:
             token = requests.post("http://127.0.0.1:8050/manager_app/token/refresh/",data=self.request.data).json()
             return Response(token,status=status.HTTP_200_OK)
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"Faillure"},status=400)
 
 class LoginApi(APIView):
@@ -35,7 +35,7 @@ class LoginApi(APIView):
     def post(self,request):
         try:
             token = requests.post("http://127.0.0.1:8050/manager_app/login/",data=self.request.data).json()
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"Faillure"},status=401)
 
         if "access" not in token.keys():
@@ -46,7 +46,7 @@ class LoginApi(APIView):
         try:
             user = requests.get("http://127.0.0.1:8050/manager_app/viewset/role/?token="+access_,headers={"Authorization":"Bearer "+access_}).json()[0]
             user['tokens']=token
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"Faillure"},status=401)
         return Response(user,status=status.HTTP_200_OK)
 
@@ -64,7 +64,7 @@ class LoginApi(APIView):
 
         try:
             user = requests.get("http://127.0.0.1:8050/manager_app/logout/",params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"Faillure"},status=401)
         return Response(user,status=status.HTTP_200_OK)
 
@@ -82,7 +82,7 @@ class checkExistingMails(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
         try:
             resp = requests.get("http://127.0.0.1:8050/manager_app/viewset/checker/",headers={"Authorization":"Bearer "+token},params=request.query_params).json()
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"Faillure"},status=401)
         return Response(resp,status=status.HTTP_200_OK)
 

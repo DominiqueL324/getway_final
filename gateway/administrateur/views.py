@@ -44,7 +44,7 @@ class AdministrateurApi(APIView):
         try:
             admins = requests.get(URLADMINISTRATEUR,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
             return Response(admins,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
     def post(self,request):
@@ -69,7 +69,7 @@ class AdministrateurApi(APIView):
         try:
             administrateurs = requests.post(URLADMINISTRATEUR,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             return Response(administrateurs,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
                
@@ -99,7 +99,7 @@ class AdministrateurDetailsAPI(APIView):
         try:
             administrateur = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
             return Response(administrateur,status=200)    
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
@@ -124,7 +124,7 @@ class AdministrateurDetailsAPI(APIView):
         try:
             administrateurs = requests.put(URLADMINISTRATEUR+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             return Response(administrateurs,status=401) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
            
     def delete(self,request,id):
@@ -148,8 +148,31 @@ class AdministrateurDetailsAPI(APIView):
         try:
             administrateurs = requests.delete(URLADMINISTRATEUR+str(id),headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401)
+
+class UsersApi(APIView):
+
+    def get(self,request):
+
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        url_ = URLUSERS
+        try:
+            users = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
+            return Response(users,status=200)    
+        except ValueError:
+            return JsonResponse({"status":"failure"},status=401) 
+
 
 
          

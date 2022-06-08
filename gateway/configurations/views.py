@@ -38,7 +38,7 @@ class InterventionApi(APIView):
         try:
             interventions = requests.get(URLINTERVENTION,params=request.query_params).json()
             return Response(interventions,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
     def post(self,request):
@@ -57,7 +57,7 @@ class InterventionApi(APIView):
         try:
             interventions = requests.post(URLINTERVENTION,data=self.request.data).json() 
             return Response(interventions,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
                
@@ -81,7 +81,7 @@ class InterventionDetailsAPI(APIView):
         try:
             intervention = requests.get(url_,params=request.query_params).json() 
             return Response(intervention,status=200)    
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
@@ -100,7 +100,7 @@ class InterventionDetailsAPI(APIView):
         try:
             interventions = requests.put(URLINTERVENTION+str(id),data=self.request.data).json()
             return Response(interventions,status=401) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
            
     def delete(self,request,id):
@@ -118,7 +118,7 @@ class InterventionDetailsAPI(APIView):
         try:
             interventions = requests.delete(URLINTERVENTION+str(id)).json()
             return JsonResponse({"status":"done"},status=200)
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401)
 
 
@@ -141,7 +141,7 @@ class TypeProprieteApi(APIView):
         try:
             proprietes = requests.get(URLPROPRIETE,params=request.query_params).json()
             return Response(proprietes,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
     def post(self,request):
@@ -160,7 +160,7 @@ class TypeProprieteApi(APIView):
         try:
             proprietes = requests.post(URLPROPRIETE,data=self.request.data).json() 
             return Response(proprietes,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
                
@@ -184,7 +184,7 @@ class TypeProprieteDetailsAPI(APIView):
         try:
             propriete = requests.get(url_).json() 
             return Response(propriete,status=200)    
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
@@ -203,7 +203,7 @@ class TypeProprieteDetailsAPI(APIView):
         try:
             proprietes = requests.put(URLPROPRIETE+str(id),data=self.request.data).json()
             return Response(proprietes,status=401) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
            
     def delete(self,request,id):
@@ -221,6 +221,6 @@ class TypeProprieteDetailsAPI(APIView):
         try:
             proprietes = requests.delete(URLPROPRIETE+str(id)).json()
             return JsonResponse({"status":"done"},status=200)
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401)
 

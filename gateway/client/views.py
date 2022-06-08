@@ -38,7 +38,7 @@ class ClientApi(APIView):
         try:
             clients = requests.get(URLCLIENT,headers={"Authorization":"Bearer "+token},params=self.request.query_params).json()
             return Response(clients,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
     def post(self,request):
@@ -57,7 +57,7 @@ class ClientApi(APIView):
         try:
             clients = requests.post(URLCLIENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             return Response(clients,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
                
@@ -81,7 +81,7 @@ class ClientDetailsAPI(APIView):
         try:
             client = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
             return Response(client,status=200)    
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
@@ -100,7 +100,7 @@ class ClientDetailsAPI(APIView):
         try:
             clients = requests.put(URLCLIENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             return Response(clients,status=401) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
            
     def delete(self,request,id):
@@ -118,7 +118,7 @@ class ClientDetailsAPI(APIView):
         try:
             clients = requests.delete(URLCLIENT+str(id),headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401)
 
 

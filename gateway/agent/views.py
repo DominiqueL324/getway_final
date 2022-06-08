@@ -44,7 +44,7 @@ class AgentApi(APIView):
         try:
             clients = requests.get(URLAGENT,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
             return Response(clients,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
     def post(self,request):
@@ -67,7 +67,7 @@ class AgentApi(APIView):
         try:
             agents = requests.post(URLAGENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             return Response(agents,status=200) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
                
@@ -96,7 +96,7 @@ class AgentDetailsAPI(APIView):
         try:
             agent = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
             return Response(agent,status=200)    
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
@@ -121,7 +121,7 @@ class AgentDetailsAPI(APIView):
         try:
             agents = requests.put(URLAGENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             return Response(agents,status=401) 
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
            
     def delete(self,request,id):
@@ -144,7 +144,7 @@ class AgentDetailsAPI(APIView):
         try:
             agents = requests.delete(URLAGENT+str(id),headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
-        except requests.JSONDecodeError:
+        except ValueError:
             return JsonResponse({"status":"failure"},status=401)
 
 
