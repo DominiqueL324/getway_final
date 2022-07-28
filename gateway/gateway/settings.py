@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rdv',
+    'drf_yasg',
     'configurations',
     'corsheaders',
     'salarie',

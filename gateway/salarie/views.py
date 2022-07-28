@@ -17,10 +17,17 @@ from datetime import date, datetime,time,timedelta
 import requests
 from rdv.views import controller
 from gateway.settings import *
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 # Create your views here.
-
+ 
 class SalarieApi(APIView):
 
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    pagination_param = openapi.Parameter('paginated', in_=openapi.IN_QUERY ,description="Paginated data or no" ,type=openapi.TYPE_STRING,required=False)
+    page_param = openapi.Parameter('page', in_=openapi.IN_QUERY ,description="Pagination page" ,type=openapi.TYPE_INTEGER,required=False)
+
+    @swagger_auto_schema(manual_parameters=[token_param,pagination_param,page_param])
     def get(self,request):
 
         try:
@@ -41,6 +48,26 @@ class SalarieApi(APIView):
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
+    
+    
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'nom': openapi.Schema(type=openapi.TYPE_STRING),
+                'prenom': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                'login': openapi.Schema(type=openapi.TYPE_STRING),
+                'mdp': openapi.Schema(type=openapi.TYPE_STRING),
+                'fonction': openapi.Schema(type=openapi.TYPE_STRING),
+                'mobile':openapi.Schema(type=openapi.TYPE_STRING),
+                'titre':openapi.Schema(type=openapi.TYPE_STRING),
+                'agent':openapi.Schema(type=openapi.TYPE_INTEGER),
+                'telephone':openapi.Schema(type=openapi.TYPE_STRING),
+            },
+         ),
+        manual_parameters=[token_param])
     def post(self,request):
 
         try:
@@ -62,7 +89,9 @@ class SalarieApi(APIView):
 
                
 class SalarieDetailsAPI(APIView):
-
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    
+    @swagger_auto_schema(manual_parameters=[token_param])
     def get(self,request,id):
 
         try:
@@ -85,6 +114,25 @@ class SalarieDetailsAPI(APIView):
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'nom': openapi.Schema(type=openapi.TYPE_STRING),
+                'prenom': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                'login': openapi.Schema(type=openapi.TYPE_STRING),
+                'mdp': openapi.Schema(type=openapi.TYPE_STRING),
+                'fonction': openapi.Schema(type=openapi.TYPE_STRING),
+                'mobile':openapi.Schema(type=openapi.TYPE_STRING),
+                'titre':openapi.Schema(type=openapi.TYPE_STRING),
+                'agent':openapi.Schema(type=openapi.TYPE_INTEGER),
+                'telephone':openapi.Schema(type=openapi.TYPE_STRING),
+                'is_active':openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            },
+         ),
+        manual_parameters=[token_param])
     def put(self,request,id):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
@@ -103,6 +151,7 @@ class SalarieDetailsAPI(APIView):
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
            
+    @swagger_auto_schema(manual_parameters=[token_param])
     def delete(self,request,id):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]

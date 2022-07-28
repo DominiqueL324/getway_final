@@ -19,10 +19,21 @@ from datetime import date, datetime,time,timedelta
 import requests
 from rdv.views import controller
 from gateway.settings import *
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class RefreshToken(APIView):
 
+    #refresh token method
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ))
     def post(self,request):
         try:
             token = requests.post("http://127.0.0.1:8050/manager_app/token/refresh/",data=self.request.data).json()
@@ -32,6 +43,19 @@ class RefreshToken(APIView):
 
 class LoginApi(APIView):
 
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    token_black = openapi.Parameter('token', in_=openapi.IN_QUERY ,description="Refresh token for logout" ,type=openapi.TYPE_STRING)
+
+    #login method
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+         ))
     def post(self,request):
         try:
             token = requests.post("http://127.0.0.1:8050/manager_app/login/",data=self.request.data).json()
@@ -50,6 +74,8 @@ class LoginApi(APIView):
             return JsonResponse({"status":"Faillure"},status=401)
         return Response(user,status=status.HTTP_200_OK)
 
+    #logout method
+    @swagger_auto_schema(manual_parameters=[token_param,token_black])
     def get(self,request):
 
         try:
@@ -70,6 +96,12 @@ class LoginApi(APIView):
 
 class checkExistingMails(APIView):
 
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    login_param = openapi.Parameter('username', in_=openapi.IN_QUERY ,description="Username to check if existing" ,type=openapi.TYPE_STRING)
+    id_param = openapi.Parameter('id', in_=openapi.IN_QUERY ,description="Id of the user for check" ,type=openapi.TYPE_STRING)
+    email_param = openapi.Parameter('email', in_=openapi.IN_QUERY ,description="Email to check if existing" ,type=openapi.TYPE_STRING)
+
+    @swagger_auto_schema(manual_parameters=[token_param,login_param,email_param,id_param])
     def get(self,request):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]

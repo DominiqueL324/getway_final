@@ -17,10 +17,17 @@ from datetime import date, datetime,time,timedelta
 import requests
 from rdv.views import controller
 from gateway.settings import *
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 # Create your views here.
 
 class InterventionApi(APIView):
 
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    pagination_param = openapi.Parameter('paginated', in_=openapi.IN_QUERY ,description="Paginated data or no" ,type=openapi.TYPE_STRING,required=False)
+    page_param = openapi.Parameter('page', in_=openapi.IN_QUERY ,description="Pagination page" ,type=openapi.TYPE_INTEGER,required=False)
+
+    @swagger_auto_schema(manual_parameters=[token_param,pagination_param,page_param])
     def get(self,request):
 
         try:
@@ -41,6 +48,16 @@ class InterventionApi(APIView):
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'type': openapi.Schema(type=openapi.TYPE_STRING),
+                'statut': openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+         ),
+        manual_parameters=[token_param])
     def post(self,request):
 
         try:
@@ -62,7 +79,9 @@ class InterventionApi(APIView):
 
                
 class InterventionDetailsAPI(APIView):
-
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    
+    @swagger_auto_schema(manual_parameters=[token_param])
     def get(self,request,id):
 
         try:
@@ -85,6 +104,16 @@ class InterventionDetailsAPI(APIView):
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'type': openapi.Schema(type=openapi.TYPE_STRING),
+                'statut': openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+         ),
+        manual_parameters=[token_param])
     def put(self,request,id):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
@@ -102,7 +131,8 @@ class InterventionDetailsAPI(APIView):
             return Response(interventions,status=401) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
-           
+
+    @swagger_auto_schema(manual_parameters=[token_param])       
     def delete(self,request,id):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
@@ -124,6 +154,11 @@ class InterventionDetailsAPI(APIView):
 
 class TypeProprieteApi(APIView):
 
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    pagination_param = openapi.Parameter('paginated', in_=openapi.IN_QUERY ,description="Paginated data or not" ,type=openapi.TYPE_STRING,required=False)
+    page_param = openapi.Parameter('page', in_=openapi.IN_QUERY ,description="Pagination page" ,type=openapi.TYPE_INTEGER,required=False)
+
+    @swagger_auto_schema(manual_parameters=[token_param,pagination_param,page_param])
     def get(self,request):
 
         try:
@@ -144,6 +179,16 @@ class TypeProprieteApi(APIView):
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'type': openapi.Schema(type=openapi.TYPE_STRING),
+                'statut': openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+         ),
+        manual_parameters=[token_param])
     def post(self,request):
 
         try:
@@ -165,7 +210,10 @@ class TypeProprieteApi(APIView):
 
                
 class TypeProprieteDetailsAPI(APIView):
+    
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
 
+    @swagger_auto_schema(manual_parameters=[token_param])
     def get(self,request,id):
 
         try:
@@ -188,6 +236,16 @@ class TypeProprieteDetailsAPI(APIView):
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'type': openapi.Schema(type=openapi.TYPE_STRING),
+                'statut': openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+         ),
+        manual_parameters=[token_param])
     def put(self,request,id):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
@@ -205,7 +263,8 @@ class TypeProprieteDetailsAPI(APIView):
             return Response(proprietes,status=401) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
-           
+
+    @swagger_auto_schema(manual_parameters=[token_param])        
     def delete(self,request,id):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]

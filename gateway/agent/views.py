@@ -18,10 +18,17 @@ import requests
 from rdv.views import controller
 from gateway.settings import *
 from logger.views import checkRole
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 # Create your views here.
 
 class AgentApi(APIView):
 
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    pagination_param = openapi.Parameter('paginated', in_=openapi.IN_QUERY ,description="Paginated data or no" ,type=openapi.TYPE_STRING,required=False)
+    page_param = openapi.Parameter('page', in_=openapi.IN_QUERY ,description="Pagination page" ,type=openapi.TYPE_INTEGER,required=False)
+
+    @swagger_auto_schema(manual_parameters=[token_param,pagination_param,page_param])
     def get(self,request):
 
         try:
@@ -47,6 +54,21 @@ class AgentApi(APIView):
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'nom': openapi.Schema(type=openapi.TYPE_STRING),
+                'prenom': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                'login': openapi.Schema(type=openapi.TYPE_STRING),
+                'mdp': openapi.Schema(type=openapi.TYPE_STRING),
+                'adresse': openapi.Schema(type=openapi.TYPE_STRING),
+                'trigramme': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+         ),
+        manual_parameters=[token_param])
     def post(self,request):
 
         try:
@@ -73,6 +95,8 @@ class AgentApi(APIView):
                
 class AgentDetailsAPI(APIView):
 
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    @swagger_auto_schema(manual_parameters=[token_param])
     def get(self,request,id):
 
         try:
@@ -100,6 +124,20 @@ class AgentDetailsAPI(APIView):
             return JsonResponse({"status":"failure"},status=401) 
             
     #edit rdv
+    @swagger_auto_schema(request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties={
+                'nom': openapi.Schema(type=openapi.TYPE_STRING),
+                'prenom': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                'login': openapi.Schema(type=openapi.TYPE_STRING),
+                'mdp': openapi.Schema(type=openapi.TYPE_STRING),
+                'adresse': openapi.Schema(type=openapi.TYPE_STRING),
+                'trigramme': openapi.Schema(type=openapi.TYPE_STRING),
+                'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            },
+         ),manual_parameters=[token_param])
     def put(self,request,id):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
@@ -120,10 +158,11 @@ class AgentDetailsAPI(APIView):
 
         try:
             agents = requests.put(URLAGENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
-            return Response(agents,status=401) 
+            return Response(agents,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
-           
+
+    @swagger_auto_schema(manual_parameters=[token_param])     
     def delete(self,request,id):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
