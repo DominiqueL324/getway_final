@@ -16,9 +16,11 @@ from django.contrib.auth.models import User, Group
 from datetime import date, datetime,time,timedelta
 import requests
 from rdv.views import controller
+from logger.views import checkRole
 from gateway.settings import *
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from logger.tools import envoyerEmail
 # Create your views here.
 
 class ClientApi(APIView):
@@ -41,9 +43,21 @@ class ClientApi(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
         
+        #controle des roles 
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+
+        url_= URLCLIENT
+        if role ['user']['group']  == "Agent secteur" or role['user']['group'] == "Agent constat":
+            url_ = url_+"?token="+token
+
         final_=[]
         try:
-            clients = requests.get(URLCLIENT,headers={"Authorization":"Bearer "+token},params=self.request.query_params).json()
+            clients = requests.get(url_,headers={"Authorization":"Bearer "+token},params=self.request.query_params).json()
             return Response(clients,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
@@ -62,6 +76,7 @@ class ClientApi(APIView):
                 'code_client': openapi.Schema(type=openapi.TYPE_STRING),
                 'adresse':openapi.Schema(type=openapi.TYPE_STRING),
                 'telephone':openapi.Schema(type=openapi.TYPE_STRING),
+                'type':openapi.Schema(type=openapi.TYPE_STRING),
             },
          ),
         manual_parameters=[token_param])
@@ -77,6 +92,14 @@ class ClientApi(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
+        #controle des roles 
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
             clients = requests.post(URLCLIENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
@@ -101,16 +124,27 @@ class ClientDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
+        #controle des roles 
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
 
-        url_ = URLCLIENT+str(id)
-    
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
+            if (role['user']['group'] == "Client pro" or role['user']['group'] == "Client particulier") and int(role['id'])==int(id):
+                url_ = URLCLIENT+str(id)
+            else:
+                return JsonResponse({"status":"insufficient privileges"},status=401)
+        else:
+            url_ = URLCLIENT+str(id)
+        
         try:
-            client = requests.get(url_,headers={"Authorization":"Bearer "+token}).json() 
+            client = requests.get(url_,params=self.request.query_params,headers={"Authorization":"Bearer "+token}).json() 
             return Response(client,status=200)    
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
             
-    #edit rdv
+    #edit client
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -122,6 +156,7 @@ class ClientDetailsAPI(APIView):
                 'login': openapi.Schema(type=openapi.TYPE_STRING),
                 'mdp': openapi.Schema(type=openapi.TYPE_STRING),
                 'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                'type':openapi.Schema(type=openapi.TYPE_INTEGER),
                 'adresse': openapi.Schema(type=openapi.TYPE_STRING),
                 'code_client': openapi.Schema(type=openapi.TYPE_STRING),
                 'nom_complet_comptable' : openapi.Schema(type=openapi.TYPE_STRING),
@@ -168,9 +203,25 @@ class ClientDetailsAPI(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
 
+        #controle des roles 
+        role = checkRole(token)
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur" and role['user']['group'] == "Client particulier" and role['user']['group'] == "Client pro":
+            if role['user']['group'] == "Client pro" and int(role['id'])==int(id):
+                url_ = URLCLIENT+str(id)
+            elif role['user']['group'] == "Client particulier" and int(role['id'])==int(id):
+                url_ = URLCLIENT+str(id)
+            else:
+                return JsonResponse({"status":"insufficient privileges"},status=401)
+        else:
+            url_ = URLCLIENT+str(id)
+
         try:
-            clients = requests.put(URLCLIENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
-            return Response(clients,status=401) 
+            clients = requests.put(url_,headers={"Authorization":"Bearer "+token},data=self.request.data).json()
+            contenu = "Modification(s) sur votre espace personnel, connectez vous afin d'en prendre connaissance."
+            clients[0]['email'] = envoyerEmail("Création de compte",contenu,[clients[0]['user']['email']],contenu)
+            clients[0]['email_send'] = clients[0]['user']['email']
+            
+            return Response(clients,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
            
@@ -188,8 +239,21 @@ class ClientDetailsAPI(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
 
+        #controle des roles 
+        role = checkRole(token)
+        
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+            if role['user']['group'] == "Client pro" and int(role['id'])==int(id):
+                url_ = URLCLIENT+str(id)
+            elif role['user']['group'] == "Client particulier" and int(role['id'])==int(id):
+                url_ = URLCLIENT+str(id)
+            else:
+                return JsonResponse({"status":"insufficient privileges"},status=401)
+        else:
+            url_ = URLCLIENT+str(id)
+
         try:
-            clients = requests.delete(URLCLIENT+str(id),headers={"Authorization":"Bearer "+token}).json()
+            clients = requests.delete(url_,headers={"Authorization":"Bearer "+token}).json()
             return JsonResponse({"status":"done"},status=200)
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)

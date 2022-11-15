@@ -20,6 +20,7 @@ from gateway.settings import *
 from logger.views import checkRole
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from logger.tools import envoyerEmail
 # Create your views here.
 
 class AgentApi(APIView):
@@ -31,6 +32,9 @@ class AgentApi(APIView):
     @swagger_auto_schema(manual_parameters=[token_param,pagination_param,page_param])
     def get(self,request):
 
+        if request.GET.get("mail",None) is not None:
+            envoyerEmail()
+            return JsonResponse({"ok":"ok"},status=200)
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
         except KeyError:
@@ -42,15 +46,16 @@ class AgentApi(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
         
-        #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-            #return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-            #return JsonResponse({"status":"No roles"},status=401)
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Client particulier" and role['user']['group'] != "Client pro" and role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
         
         try:
-            clients = requests.get(URLAGENT,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
-            return Response(clients,status=200) 
+            agents = requests.get(URLAGENT,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
+            return Response(agents,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
@@ -66,6 +71,7 @@ class AgentApi(APIView):
                 'mdp': openapi.Schema(type=openapi.TYPE_STRING),
                 'adresse': openapi.Schema(type=openapi.TYPE_STRING),
                 'trigramme': openapi.Schema(type=openapi.TYPE_STRING),
+                'role':openapi.Schema(type=openapi.TYPE_INTEGER),
             },
          ),
         manual_parameters=[token_param])
@@ -81,13 +87,20 @@ class AgentApi(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
         #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-        #    return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-        #    return JsonResponse({"status":"No roles"},status=401)
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
         try:
             agents = requests.post(URLAGENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
+            contenu = "Bienvenue,  M ou MME "
+            contenu = contenu + agents[0]['user']['nom']+" "+agents[0]['user']['prenom']
+            contenu = contenu + ", création de votre espace personnel. Cet espace vous permettra d'interagir avec vos clients et le centre de gestion."
+            envoyerEmail("Création de compte",contenu,[agents[0]['user']['email']],contenu)
             return Response(agents,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -109,11 +122,14 @@ class AgentDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
         #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-            #return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-            #return JsonResponse({"status":"No roles"},status=401)
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Client particulierr" and role['user']['group'] != "Client pro" and role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLAGENT+str(id)
     
@@ -136,6 +152,7 @@ class AgentDetailsAPI(APIView):
                 'adresse': openapi.Schema(type=openapi.TYPE_STRING),
                 'trigramme': openapi.Schema(type=openapi.TYPE_STRING),
                 'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                'role':openapi.Schema(type=openapi.TYPE_INTEGER),
             },
          ),manual_parameters=[token_param])
     def put(self,request,id):
@@ -151,13 +168,18 @@ class AgentDetailsAPI(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
         
         #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-         #   return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-            #return JsonResponse({"status":"No roles"},status=401)
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
             agents = requests.put(URLAGENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
+            contenu = "Modification(s) sur votre espace personnel, connectez vous afin d'en prendre connaissance."
+            agents[0]['email'] = envoyerEmail("Création de compte",contenu,[agents[0]['user']['email']],contenu)
+            agents[0]['email_send'] = agents[0]['user']['email']
             return Response(agents,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -174,11 +196,14 @@ class AgentDetailsAPI(APIView):
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
+        
         #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-        #   return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-        #    return JsonResponse({"status":"No roles"},status=401)
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
             agents = requests.delete(URLAGENT+str(id),headers={"Authorization":"Bearer "+token}).json()

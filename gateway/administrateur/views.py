@@ -22,6 +22,7 @@ from logger.views import checkRole
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from drf_yasg import generators
+from logger.tools import envoyerEmail
 # Create your views here.
 
 class AdministrateurApi(APIView):
@@ -44,11 +45,13 @@ class AdministrateurApi(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
             
-        #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-            #return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-            #return JsonResponse({"status":"No roles"},status=401)
+        #controle des roles
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
             admins = requests.get(URLADMINISTRATEUR,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
@@ -73,25 +76,31 @@ class AdministrateurApi(APIView):
         manual_parameters=[token_param])
     def post(self,request):
 
-        try:
+        """try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
         except KeyError:
-            return JsonResponse({"status":"not_logged"},status=401)
+            return JsonResponse({"status":"not_logged"},status=401)"""
 
-        logged = controller(token)
+        """logged = controller(token)
         test = isinstance(logged, list)
         if not test:
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
         
-        #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-            #return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-            #return JsonResponse({"status":"No roles"},status=401)
+        #controle des roles
+        role = checkRole(token)
+        if role == -1:
+           return JsonResponse({"status":"No roles"},status=401) 
 
+        if role['user']['group'] != "Administrateur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)"""
+        
         try:
-            administrateurs = requests.post(URLADMINISTRATEUR,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
+            administrateurs = requests.post(URLADMINISTRATEUR,data=self.request.data).json() 
+            contenu = "Bienvenue,  M ou MME "
+            contenu = contenu + administrateurs[0]['user']['nom']+" "+administrateurs[0]['user']['prenom']
+            contenu = contenu + ", création de votre espace personnel. Cet espace vous permettra d'interagir avec vos clients et le centre de gestion."
+            envoyerEmail("Création de compte",contenu,[administrateurs[0]['user']['email']],contenu)
             return Response(administrateurs,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -114,11 +123,14 @@ class AdministrateurDetailsAPI(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
         
-        #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-            #return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-            #return JsonResponse({"status":"No roles"},status=401)
+        #controle des roles
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+        
 
         url_ = URLADMINISTRATEUR+str(id)
     
@@ -155,15 +167,19 @@ class AdministrateurDetailsAPI(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
             
-        #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-            #return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-            #return JsonResponse({"status":"No roles"},status=401)
+        #controle des roles
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
             administrateurs = requests.put(URLADMINISTRATEUR+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
-            return Response(administrateurs,status=401) 
+            contenu = "Modification(s) sur votre espace personnel, connectez vous afin d'en prendre connaissance."
+            envoyerEmail("Création de compte",contenu,[administrateurs[0]['user']['email']],contenu)
+            return Response(administrateurs,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
@@ -180,11 +196,12 @@ class AdministrateurDetailsAPI(APIView):
         #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
         
-        #controle des roles 
-        #if checkRole(self.request,"administrateur") == 0:
-            #return JsonResponse({"status":"insufficient privileges"},status=401)
-        #if checkRole(self.request,"administrateur")== -1:
-            #return JsonResponse({"status":"No roles"},status=401)
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
             administrateurs = requests.delete(URLADMINISTRATEUR+str(id),headers={"Authorization":"Bearer "+token}).json()
@@ -212,6 +229,21 @@ class UsersApi(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
 
         url_ = URLUSERS
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+            return JsonResponse({"status":"insufficient privilegies"},status=401) 
+
+        if role ['user']['group']  == "Agent secteur" or role['user']['group'] == "Agent constat" or role['user']['group'] == "Audit planneur":
+            url_ = url_+"?agent="+str(role['id'])
+
+        if  role['user']['group'] == "Client pro" or  role['user']['group'] == "Client particulier":
+            url_ = url_+"?client="+str(role['user']['id'])
+
+
         try:
             users = requests.get(url_,params=request.query_params,headers={"Authorization":"Bearer "+token}).json() 
             return Response(users,status=200)    
