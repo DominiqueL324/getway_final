@@ -197,5 +197,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'mail.infomaniak.ch'
 EMAIL_HOST_USER = 'no-reply@amexpert.pro'
-EMAIL_HOST_PASSWORD = 'TooR123$'
 EMAIL_PORT = 587
