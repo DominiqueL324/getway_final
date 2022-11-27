@@ -217,7 +217,7 @@ class RdvApi(APIView):
             #contenu = "Votre commande est enregistrée."
             #envoyerEmail("Création de commande",contenu,[rdv['client']['user']['email']],contenu) 
             final_.append(rdv)
-            requests.post(URLEMAIL,json=mail,params=self.request.query_params).json()
+            requests.post(URLEMAIL,json=mail,params=self.request.query_params)
         return Response(final_,status=status.HTTP_201_CREATED)
 
                
